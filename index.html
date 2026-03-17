@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-игры</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .game-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .game-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .play-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            border: none;
+            outline: none;
+        }
+        
+        .play-button:hover {
+            opacity: 0.9;
+        }
+        
+        .game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .game-modal.active {
+            display: flex;
+        }
+        
+        .game-frame {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .close-button:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Мини-игры</h1>
+        
+        <div class="games-grid">
+            <!-- Карточка игры 1: Угадай число -->
+            <div class="game-card" onclick="openGame('guess')">
+                <div class="game-icon">🎲</div>
+                <div class="game-title">Угадай число</div>
+                <div class="game-description">Компьютер загадал число от 1 до 100. Попробуй угадать!</div>
+                <button class="play-button">Играть</button>
+            </div>
+            
+            <!-- Карточка игры 2: Камень, ножницы, бумага -->
+            <div class="game-card" onclick="openGame('rps')">
+                <div class="game-icon">✂️</div>
+                <div class="game-title">Камень, ножницы, бумага</div>
+                <div class="game-description">Сыграй против компьютера в классическую игру</div>
+                <button class="play-button">Играть</button>
+            </div>
+            
+            <!-- Карточка игры 3: Саймон говорит -->
+            <div class="game-card" onclick="openGame('simon')">
+                <div class="game-icon">🔴</div>
+                <div class="game-title">Саймон говорит</div>
+                <div class="game-description">Запоминай и повторяй последовательность цветов</div>
+                <button class="play-button">Играть</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно с игрой -->
+    <div class="game-modal" id="gameModal">
+        <div class="game-frame">
+            <span class="close-button" onclick="closeGame()">&times;</span>
+            <div id="gameContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function openGame(gameType) {
+            const modal = document.getElementById('gameModal');
+            const content = document.getElementById('gameContent');
+            
+            switch(gameType) {
+                case 'guess':
+                    content.innerHTML = getGuessGame();
+                    break;
+                case 'rps':
+                    content.innerHTML = getRPSGame();
+                    break;
+                case 'simon':
+                    content.innerHTML = getSimonGame();
+                    break;
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeGame() {
+            document.getElementById('gameModal').classList.remove('active');
+        }
+        
+        function getGuessGame() {
+            return `
+                <div style="text-align: center;">
+                    <h2 style="margin-bottom: 20px;">🎲 Угадай число</h2>
+                    <p style="margin-bottom: 20px;">Я загадал число от 1 до 100. Попробуй угадать!</p>
+                    <input type="number" id="guessInput" min="1" max="100" style="padding: 10px; margin-bottom: 10px; width: 100px;">
+                    <button onclick="checkGuess()" class="play-button" style="margin-left: 10px;">Проверить</button>
+                    <div id="guessResult" style="margin-top: 20px; font-weight: bold;"></div>
+                </div>
+            `;
+        }
+        
+        function getRPSGame() {
+            return `
+                <div style="text-align: center;">
+                    <h2 style="margin-bottom: 20px;">✂️ Камень, ножницы, бумага</h2>
+                    <div style="margin-bottom: 20px;">
+                        <button onclick="playRPS('rock')" class="play-button" style="margin: 5px;">👊 Камень</button>
+                        <button onclick="playRPS('paper')" class="play-button" style="margin: 5px;">✋ Бумага</button>
+                        <button onclick="playRPS('scissors')" class="play-button" style="margin: 5px;">✌️ Ножницы</button>
+                    </div>
+                    <div id="rpsResult" style="font-weight: bold;"></div>
+                </div>
+            `;
+        }
+        
+        function getSimonGame() {
+            return `
+                <div style="text-align: center;">
+                    <h2 style="margin-bottom: 20px;">🔴 Саймон говорит</h2>
+                    <p style="margin-bottom: 20px;">Нажми "Начать игру" и повторяй последовательность</p>
+                    <button onclick="startSimon()" class="play-button">Начать игру</button>
+                    <div id="simonGame" style="margin-top: 20px;"></div>
+                </div>
+            `;
+        }
+        
+        // Игра "Угадай число"
+        const secretNumber = Math.floor(Math.random() * 100) + 1;
+        
+        function checkGuess() {
+            const guess = parseInt(document.getElementById('guessInput').value);
+            const result = document.getElementById('guessResult');
+            
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                result.innerHTML = '❌ Введи число от 1 до 100!';
+                return;
+            }
+            
+            if (guess === secretNumber) {
+                result.innerHTML = '🎉 Поздравляю! Ты угадал!';
+            } else if (guess < secretNumber) {
+                result.innerHTML = '⬆️ Загаданное число больше!';
+            } else {
+                result.innerHTML = '⬇️ Загаданное число меньше!';
+            }
+        }
+        
+        // Игра "Камень, ножницы, бумага"
+        function playRPS(playerChoice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            const result = document.getElementById('rpsResult');
+            
+            const emojis = {
+                'rock': '👊',
+                'paper': '✋',
+                'scissors': '✌️'
+            };
+            
+            let gameResult = '';
+            
+            if (playerChoice === computerChoice) {
+                gameResult = '🤝 Ничья!';
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                gameResult = '🎉 Ты выиграл!';
+            } else {
+                gameResult = '💻 Компьютер выиграл!';
+            }
+            
+            result.innerHTML = `
+                Ты: ${emojis[playerChoice]}<br>
+                Компьютер: ${emojis[computerChoice]}<br>
+                <strong style="font-size: 1.2em; margin-top: 10px; display: block;">${gameResult}</strong>
+            `;
+        }
+        
+        // Игра "Саймон говорит"
+        let simonSequence = [];
+        let playerSequence = [];
+        let level = 0;
+        let canPlay = false;
+        
+        function startSimon() {
+            simonSequence = [];
+            playerSequence = [];
+            level = 0;
+            nextLevel();
+        }
+        
+        function nextLevel() {
+            level++;
+            canPlay = false;
+            
+            const colors = ['🔴', '🔵', '🟢', '🟡'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            simonSequence.push(randomColor);
+            
+            const gameDiv = document.getElementById('simonGame');
+            gameDiv.innerHTML = `<p>Уровень ${level}</p>`;
+            
+            // Показываем последовательность
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < simonSequence.length) {
+                    gameDiv.innerHTML += `<span style="font-size: 2em; margin: 5px;">${simonSequence[i]}</span>`;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    gameDiv.innerHTML += '<br><br>';
+                    
+                    // Создаем кнопки для повторения
+                    colors.forEach(color => {
+                        gameDiv.innerHTML += `<button onclick="simonClick('${color}')" style="font-size: 2em; margin: 5px;">${color}</button>`;
+                    });
+                    
+                    canPlay = true;
+                    playerSequence = [];
+                }
+            }, 1000);
+        }
+        
+        function simonClick(color) {
+            if (!canPlay) return;
+            
+            playerSequence.push(color);
+            
+            // Проверяем правильность
+            if (playerSequence[playerSequence.length - 1] !== simonSequence[playerSequence.length - 1]) {
+                document.getElementById('simonGame').innerHTML = `
+                    <p style="color: red;">❌ Игра окончена! Ты набрал ${level-1} очков</p>
+                    <button onclick="startSimon()" class="play-button">Играть снова</button>
+                `;
+                canPlay = false;
+                return;
+            }
+            
+            // Проверяем, завершен ли уровень
+            if (playerSequence.length === simonSequence.length) {
+                canPlay = false;
+                setTimeout(() => {
+                    nextLevel();
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
